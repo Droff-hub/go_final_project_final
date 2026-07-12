@@ -1,0 +1,4 @@
+scheduler.db
+*.log
+*.exe
+.DS_Store.env
