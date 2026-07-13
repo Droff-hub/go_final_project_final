@@ -20,18 +20,18 @@ func signinHandler(w http.ResponseWriter, r *http.Request) {
 		Password string `json:"password"`
 	}
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		WriteJSON(w, map[string]string{"error": "Неверный формат запроса"})
+		writeJSON(w, http.StatusBadRequest, map[string]string{"error": "Неверный формат запроса"})
 		return
 	}
 
 	expected := os.Getenv("TODO_PASSWORD")
 	if expected == "" {
-		WriteJSON(w, map[string]string{"error": "Пароль не задан"})
+		writeJSON(w, http.StatusBadRequest, map[string]string{"error": "Пароль не задан"})
 		return
 	}
 
 	if req.Password != expected {
-		WriteJSON(w, map[string]string{"error": "Неверный пароль"})
+		writeJSON(w, http.StatusUnauthorized, map[string]string{"error": "Неверный пароль"})
 		return
 	}
 
@@ -40,15 +40,14 @@ func signinHandler(w http.ResponseWriter, r *http.Request) {
 		"hash": hashPassword(expected),
 		"exp":  time.Now().Add(8 * time.Hour).Unix(),
 	})
-
 	tokenString, err := token.SignedString([]byte("secret-key"))
 	if err != nil {
-		WriteJSON(w, map[string]string{"error": "Ошибка создания токена"})
+		writeJSON(w, http.StatusInternalServerError, map[string]string{"error": "Ошибка создания токена"})
 		return
 	}
-
-	WriteJSON(w, map[string]string{"token": tokenString})
+	writeJSON(w, http.StatusOK, map[string]string{"token": tokenString})
 }
+
 
 // hashPassword возвращает простую контрольную сумму пароля
 func hashPassword(pass string) string {

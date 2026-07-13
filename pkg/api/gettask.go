@@ -15,15 +15,18 @@ func getTaskHandler(w http.ResponseWriter, r *http.Request) {
 
 	id := r.FormValue("id")
 	if id == "" {
-		WriteJSON(w, map[string]string{"error": "Не указан идентификатор"})
+		writeJSON(w, http.StatusBadRequest, map[string]string{"error": "Не указан идентификатор"})
 		return
 	}
 
 	task, err := db.GetTask(id)
 	if err != nil {
-		WriteJSON(w, map[string]string{"error": err.Error()})
+		status := http.StatusInternalServerError
+		if err.Error() == "задача с id "+id+" не найдена" {
+			status = http.StatusNotFound
+		}
+		writeJSON(w, status, map[string]string{"error": err.Error()})
 		return
 	}
-
-	WriteJSON(w, task)
+	writeJSON(w, http.StatusOK, task)
 }

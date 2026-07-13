@@ -36,25 +36,23 @@ func NextDate(now time.Time, dstart string, repeat string) (string, error) {
 
 	switch parts[0] {
 	case "d":
-		// правило "d <число>"
-		if len(parts) != 2 {
-			return "", fmt.Errorf("неверный формат правила d: требуется число")
-		}
-		days, err := strconv.Atoi(parts[1])
-		if err != nil {
-			return "", fmt.Errorf("неверное число дней: %v", err)
-		}
-		if days < 1 || days > 400 {
-			return "", fmt.Errorf("число дней должно быть от 1 до 400")
-		}
-		// Сдвигаем дату на days дней до тех пор, пока она не станет больше now
-		for {
-			date = date.AddDate(0, 0, days)
-			if !date.Before(now) {
-				break
-			}
-		}
-		return date.Format(DateFormat), nil
+    if len(parts) != 2 {
+        return "", fmt.Errorf("неверный формат правила d: требуется число")
+    }
+    days, err := strconv.Atoi(parts[1])
+    if err != nil {
+        return "", fmt.Errorf("неверное число дней: %v", err)
+    }
+    if days < 1 || days > 400 {
+        return "", fmt.Errorf("число дней должно быть от 1 до 400")
+    }
+    for {
+        date = date.AddDate(0, 0, days)
+        if date.After(now) {
+            break
+        }
+    }
+    return date.Format(DateFormat), nil
 
 	case "y":
 		// ежегодное повторение
